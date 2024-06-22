@@ -3,22 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Webhook Splitter</title>
+    <title>Webhook Splitter - Forward One Webhook to Multiple Targets</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 p-8">
-    <div class="max-w-4xl mx-auto">
-        <h1 class="text-3xl font-bold mb-8">Webhook Splitter</h1>
-        
-        <form action="{{ url_for('create_webhook') }}" method="post">
-            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4">
-                Create New Webhook
-            </button>
-        </form>
+<body class="bg-gradient-to-r from-blue-100 to-purple-100 min-h-screen">
+    <div class="max-w-4xl mx-auto p-8">
+        <div class="bg-white rounded-lg shadow-xl p-8 mb-8">
+            <h1 class="text-4xl font-bold mb-6 text-center text-blue-600">Webhook Splitter</h1>
+            
+            <p class="text-xl mb-8 text-center text-gray-700">
+                Forward a single callback/webhook to multiple targets using webhook splitter!
+            </p>
 
-        <p class="mt-4">
-            Click the button above to create a new webhook. You'll be redirected to a unique page where you can set up and manage your webhook.
-        </p>
+            <div class="mb-8 bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+                <h2 class="text-2xl font-semibold mb-2 text-blue-800">How it works:</h2>
+                <ol class="list-decimal list-inside text-gray-700">
+                    <li class="mb-2">Create a new webhook</li>
+                    <li class="mb-2">Add multiple target URLs</li>
+                    <li class="mb-2">Use the provided webhook URL in your applications</li>
+                    <li>We'll forward the webhook to all your specified targets!</li>
+                </ol>
+            </div>
+
+            <div class="text-center">
+                <form action="{{ url_for('create_webhook') }}" method="post">
+                    <button type="submit" 
+                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full transition duration-300 ease-in-out transform hover:scale-105">
+                        Create New Webhook
+                    </button>
+                </form>
+            </div>
+
+            <p class="mt-8 text-center text-gray-600">
+                Simplify your webhook management and integrate multiple services effortlessly!
+            </p>
+        </div>
     </div>
 </body>
 </html>
