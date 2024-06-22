@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webhook History | {{ webhook.id }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-8">Webhook History for {{ webhook.id }}</h1>
+        
+        <a href="/" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4 inline-block">
+            Back to Webhooks
+        </a>
+
+        <div class="mt-8">
+            {% for forwarded in forwarded_webhooks %}
+                <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+                    <h2 class="text-xl font-semibold mb-2">Timestamp: {{ forwarded.timestamp }}</h2>
+                    <h3 class="text-lg font-semibold mt-4 mb-2">Headers:</h3>
+                    <pre class="bg-gray-100 p-4 rounded overflow-x-auto">{{ forwarded.headers }}</pre>
+                    <h3 class="text-lg font-semibold mt-4 mb-2">Payload:</h3>
+                    <pre class="bg-gray-100 p-4 rounded overflow-x-auto">{{ forwarded.payload }}</pre>
+                </div>
+            {% else %}
+                <p>No forwarded webhooks found for this ID.</p>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

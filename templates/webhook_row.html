@@ -1,0 +1,28 @@
+<div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+    <h2 class="text-xl font-semibold mb-2">Webhook ID: {{ webhook.id }}</h2>
+    <p class="mb-4">Endpoint: <code class="bg-gray-200 p-1 rounded">https://yourapp.com/webhook/{{ webhook.id }}</code></p>
+    
+    <h3 class="text-lg font-semibold mb-2">Target URLs:</h3>
+    <ul id="targets-{{ webhook.id }}" class="list-disc pl-5 mb-4">
+        {% for target in webhook.targets.split(',') if target %}
+            <li>{{ target }}</li>
+        {% endfor %}
+    </ul>
+
+    <form hx-post="/add_target/{{ webhook.id }}" 
+          hx-target="#targets-{{ webhook.id }}" 
+          hx-swap="innerHTML"
+          class="flex items-center mb-4">
+        <input type="url" name="target" placeholder="https://example.com/webhook" required
+               class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mr-2">
+        <button type="submit" 
+                class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+            Add Target
+        </button>
+    </form>
+
+    <a href="/webhook/{{ webhook.id }}/history" 
+       class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded">
+        View Webhook History
+    </a>
+</div>

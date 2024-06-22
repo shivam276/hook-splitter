@@ -1,0 +1,3 @@
+{% for target in webhook.targets.split(',') if target %}
+    <li>{{ target }}</li>
+{% endfor %}
