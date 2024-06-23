@@ -13,8 +13,6 @@ Don't want to host it yourself? Use it for free at https://splithook.com
 
 ## Installation
 
-Provide step by step series of examples and explanations about how to get a development environment running.
-
 ```bash
 git clone git@github.com:shivam276/hook-splitter.git
 cd webhook-splitter
