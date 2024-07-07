@@ -69,26 +69,38 @@ def remove_target(webhook_id):
     flash('Target URL removed successfully.', 'success')
     return redirect(url_for('webhook_page', webhook_id=webhook_id))
 
-@app.route('/webhook/<webhook_id>/receive', methods=['POST'])
+@app.route('/webhook/<webhook_id>/receive', methods=['POST', 'GET'])
 def receive_webhook(webhook_id):
     webhook = Webhook.query.get(webhook_id)
     if not webhook:
         return jsonify({'error': 'Webhook not found'}), 404
 
+    if request.method == 'GET':
+        # For GET requests, forward to the first target and return its response
+        targets = webhook.targets.split(',')
+        if targets and targets[0]:
+            try:
+                response = requests.get(targets[0], params=request.args)
+                return response.content, response.status_code, response.headers.items()
+            except requests.RequestException as e:
+                return jsonify({'error': f'Error forwarding GET request: {str(e)}'}), 500
+        else:
+            return jsonify({'error': 'No targets configured'}), 400
+
+    # For POST requests, continue with the existing logic
     payload = request.json
     headers = {key: value for key, value in request.headers if key.lower().startswith('x-')}
 
-    # Store the forwarded webhook
     forwarded_webhook = ForwardedWebhook(
         webhook_id=webhook_id,
-        payload=str(payload),
-        headers=str(headers)
+        payload=payload,
+        headers=headers
     )
     db.session.add(forwarded_webhook)
     db.session.commit()
 
     for target in webhook.targets.split(','):
-        if target:  # Ensure we don't try to send to an empty target
+        if target:
             try:
                 requests.post(target, json=payload, headers=headers)
             except requests.RequestException as e:
