@@ -3,6 +3,7 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for, f
 from flask_sqlalchemy import SQLAlchemy
 import uuid
 import requests
+import json
 from datetime import datetime
 
 app = Flask(__name__)
@@ -93,9 +94,10 @@ def receive_webhook(webhook_id):
 
     forwarded_webhook = ForwardedWebhook(
         webhook_id=webhook_id,
-        payload=payload,
-        headers=headers
+        payload=json.dumps(payload),  # Serialize to JSON string
+        headers=json.dumps(headers)  # Serialize to JSON string
     )
+
     db.session.add(forwarded_webhook)
     db.session.commit()
 
