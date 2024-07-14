@@ -44,17 +44,20 @@ def webhook_page(webhook_id):
 def add_target(webhook_id):
     webhook = Webhook.query.get_or_404(webhook_id)
     new_target = request.form['target']
-    
+
     # Check if the new target is the same as the host URL
     host_url = url_for('receive_webhook', webhook_id=webhook_id, _external=True)
     if new_target == host_url:
         flash('Error: Cannot add the host URL as a target.', 'error')
         return redirect(url_for('webhook_page', webhook_id=webhook_id))
-    
+    webhook_targets = webhook.targets.split(',')
     if webhook.targets:
-        webhook.targets += f',{new_target}'
+        if new_target.strip() in webhook_targets:
+            flash('Error: Target URL already exists.', 'error')
+            return redirect(url_for('webhook_page', webhook_id=webhook_id))
+        webhook.targets += f',{new_target.strip()}'
     else:
-        webhook.targets = new_target
+        webhook.targets = new_target.strip()
     db.session.commit()
     flash('Target URL added successfully.', 'success')
     return redirect(url_for('webhook_page', webhook_id=webhook_id))
