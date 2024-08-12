@@ -79,39 +79,45 @@ def receive_webhook(webhook_id):
     if not webhook:
         return jsonify({'error': 'Webhook not found'}), 404
 
-    if request.method == 'GET':
-        # For GET requests, forward to the first target and return its response
-        targets = webhook.targets.split(',')
-        if targets and targets[0]:
-            try:
-                response = requests.get(targets[0], params=request.args)
-                return response.content, response.status_code, response.headers.items()
-            except requests.RequestException as e:
-                return jsonify({'error': f'Error forwarding GET request: {str(e)}'}), 500
-        else:
-            return jsonify({'error': 'No targets configured'}), 400
+    targets = webhook.targets.split(',')
+    if not targets or not targets[0]:
+        return jsonify({'error': 'No targets configured'}), 400
 
-    # For POST requests, continue with the existing logic
+    first_target = targets[0]
+
+    if request.method == 'GET':
+        try:
+            response = requests.get(first_target, params=request.args)
+            return response.content, response.status_code, response.headers.items()
+        except requests.RequestException as e:
+            return jsonify({'error': f'Error forwarding GET request: {str(e)}'}), 500
+
+    # For POST requests
     payload = request.json
     headers = {key: value for key, value in request.headers if key.lower().startswith('x-')}
 
     forwarded_webhook = ForwardedWebhook(
         webhook_id=webhook_id,
-        payload=json.dumps(payload),  # Serialize to JSON string
-        headers=json.dumps(headers)  # Serialize to JSON string
+        payload=json.dumps(payload),
+        headers=json.dumps(headers)
     )
 
     db.session.add(forwarded_webhook)
     db.session.commit()
 
-    for target in webhook.targets.split(','):
-        if target:
+    try:
+        response = requests.post(first_target, json=payload, headers=headers)
+        
+        # Forward to other targets asynchronously (you might want to use a task queue for this in production)
+        for target in targets[1:]:
             try:
                 requests.post(target, json=payload, headers=headers)
             except requests.RequestException as e:
                 print(f"Error forwarding to {target}: {str(e)}")
 
-    return jsonify({'status': 'ok'}), 200
+        return response.content, response.status_code, response.headers.items()
+    except requests.RequestException as e:
+        return jsonify({'error': f'Error forwarding POST request: {str(e)}'}), 500
 
 if __name__ == '__main__':
     with app.app_context():
