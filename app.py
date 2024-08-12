@@ -93,25 +93,41 @@ def receive_webhook(webhook_id):
             return jsonify({'error': f'Error forwarding GET request: {str(e)}'}), 500
 
     # For POST requests
-    payload = request.json
-    headers = {key: value for key, value in request.headers if key.lower().startswith('x-')}
+    content_type = request.headers.get('Content-Type', '')
+    
+    # Handle different content types
+    if 'application/json' in content_type:
+        payload = request.json
+    elif 'application/x-www-form-urlencoded' in content_type:
+        payload = request.form.to_dict()
+    else:
+        payload = request.data.decode('utf-8')
 
+    headers = {key: value for key, value in request.headers if key.lower() != 'content-length'}
+
+    # Store the forwarded webhook
     forwarded_webhook = ForwardedWebhook(
         webhook_id=webhook_id,
-        payload=json.dumps(payload),
-        headers=json.dumps(headers)
+        payload=json.dumps(payload) if isinstance(payload, dict) else payload,
+        headers=json.dumps(dict(headers))
     )
-
     db.session.add(forwarded_webhook)
     db.session.commit()
 
     try:
-        response = requests.post(first_target, json=payload, headers=headers)
+        # Forward to the first target
+        if isinstance(payload, dict):
+            response = requests.post(first_target, json=payload, headers=headers)
+        else:
+            response = requests.post(first_target, data=payload, headers=headers)
         
-        # Forward to other targets asynchronously (you might want to use a task queue for this in production)
+        # Forward to other targets asynchronously
         for target in targets[1:]:
             try:
-                requests.post(target, json=payload, headers=headers)
+                if isinstance(payload, dict):
+                    requests.post(target, json=payload, headers=headers)
+                else:
+                    requests.post(target, data=payload, headers=headers)
             except requests.RequestException as e:
                 print(f"Error forwarding to {target}: {str(e)}")
 
